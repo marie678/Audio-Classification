@@ -43,7 +43,7 @@ def train_epoch(model, trainloader, optim, criterion, device, epoch, train_losse
     return average_loss, accuracy
  
 
-def train_epochs(model, trainloader, valloader, optim, criterion, device, n_epochs, saving_path, patience=5, min_improvement=0.001):
+def train_epochs(model, trainloader, valloader, optim, train_criterion, val_criterion, device, n_epochs, saving_path, patience=5, min_improvement=0.001):
     
     best_val_loss = float('inf')
     best_model_state = None
@@ -55,7 +55,7 @@ def train_epochs(model, trainloader, valloader, optim, criterion, device, n_epoc
 
     
     for epoch in range(n_epochs):
-        train_loss, train_accuracy = train_epoch(model, trainloader, optim, criterion, device, epoch, train_losses, train_accuracies)
+        train_loss, train_accuracy = train_epoch(model, trainloader, optim, train_criterion, device, epoch, train_losses, train_accuracies)
         
         model.eval()
         with torch.no_grad():
@@ -66,7 +66,7 @@ def train_epochs(model, trainloader, valloader, optim, criterion, device, n_epoc
                 mels, labels = mels.to(device), labels.to(device)
 
                 preds = model(mels)
-                val_loss += criterion(preds, labels).item()
+                val_loss += val_criterion(preds, labels).item()
 
                 _, predicted = preds.max(1)
                 val_correct += predicted.eq(labels).sum().item()
@@ -183,9 +183,10 @@ def class_distrib(dataset, dataset_name):
         else:
             class_distribution[label] = 1
 
-#     class_distribution = dict(sorted(class_distribution.items()))
     class_distribution_percent = {label: count / total_samples * 100 for label, count in class_distribution.items()}
-    
+    # class_distribution = dict(sorted(class_distribution.items()))
+    class_weights = {label: total_samples / (len(class_distribution) * count) for label, count in class_distribution.items()}
+    class_weights = dict(sorted(class_weights.items()))
 
     plt.figure(figsize=(10, 6))
     plt.bar(class_distribution_percent.keys(), class_distribution_percent.values())
@@ -194,4 +195,4 @@ def class_distrib(dataset, dataset_name):
     plt.title(f"Class Distribution in {dataset_name} (in %)")
     plt.show()
 
-    return class_distribution_percent
+    return class_distribution_percent, class_weights
