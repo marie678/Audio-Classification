@@ -3,6 +3,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import librosa
 import numpy
+import random
 
 def modify_data(original_dataset):
     return ModifiedDataset(original_dataset, mel_spectro, fixed_sample_rate, num_samples, labels)
@@ -191,6 +192,37 @@ def class_distrib(dataset, dataset_name):
     class_weights = {label: total_samples / (len(class_distribution) * count) for label, count in class_distribution.items()}
     class_weights = dict(sorted(class_weights.items()))
 
+    plt.figure(figsize=(10, 6))
+    plt.bar(class_distribution_percent.keys(), class_distribution_percent.values())
+    plt.xlabel("Class Label")
+    plt.ylabel("Percentage of Samples")
+    plt.title(f"Class Distribution in {dataset_name} (in %)")
+    plt.show()
+
+    return class_distribution_percent, class_weights
+
+
+
+# for less computations (approximation of the weights)
+def class_distrib_approx(dataset, num_samples, dataset_name):
+    class_distribution = {}
+
+    # Sample a subset of data
+    sample_indices = random.sample(range(len(dataset)), num_samples)
+    for i in tqdm(sample_indices):
+        _, _, label, _ = dataset[i]
+        label = label.item()
+        if label in class_distribution:
+            class_distribution[label] += 1
+        else:
+            class_distribution[label] = 1
+
+    total_samples = num_samples
+    class_weights = {label: total_samples / (len(class_distribution)*class_count) for label, class_count in class_distribution.items()}
+    class_weights = dict(sorted(class_weights.items()))
+
+    class_distribution_percent = {label: count / total_samples * 100 for label, count in class_distribution.items()}
+ 
     plt.figure(figsize=(10, 6))
     plt.bar(class_distribution_percent.keys(), class_distribution_percent.values())
     plt.xlabel("Class Label")
