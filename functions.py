@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import librosa
 import numpy
 
+def modify_data(original_dataset):
+    return ModifiedDataset(original_dataset, mel_spectro, fixed_sample_rate, num_samples, labels)
+
 
 def train_epoch(model, trainloader, optim, criterion, device, epoch, train_losses, train_accuracies):
 
