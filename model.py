@@ -2,7 +2,7 @@ from torch import nn
 
 # Build the model
 
-class CNN(nn.Module):
+class CNN_mel(nn.Module):
 
     def __init__(self):
         super().__init__()
