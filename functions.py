@@ -16,7 +16,7 @@ def train_epoch(model, trainloader, optim, criterion, device, epoch, train_losse
 
     model.train()
 
-    for i, (wf, sr, labels, mels) in enumerate(trainloader):
+    for i, (wf, sr, labels, mels, og_label) in enumerate(trainloader):
         mels, labels = mels.to(device), labels.to(device)
 
         optim.zero_grad()
@@ -66,7 +66,7 @@ def train_epochs(model, trainloader, valloader, optim, train_criterion, val_crit
             val_loss = 0
             val_correct = 0
         
-            for i, (wf, sr, labels, mels) in enumerate(valloader):
+            for i, (wf, sr, labels, mels, og_label) in enumerate(valloader):
                 mels, labels = mels.to(device), labels.to(device)
 
                 preds = model(mels)
@@ -112,7 +112,7 @@ def test_model(model, testloader, criterion, device):
     correct = 0
 
     with torch.no_grad():
-        for wvf, sr, target, mels in tqdm(testloader):
+        for wvf, sr, target, mels, og_label in tqdm(testloader):
             mels, target = mels.to(device), target.to(device)
             output = model(mels)
             test_loss += criterion(output, target).item()
@@ -180,7 +180,7 @@ def class_distrib(dataset, dataset_name):
     class_distribution = {}
     total_samples = len(dataset)
 
-    for i, (_, _, label, _) in tqdm(enumerate(dataset)):
+    for i, (_, _, label, _, _) in tqdm(enumerate(dataset)):
         label = label.item()
         if label in class_distribution:
             class_distribution[label] += 1
@@ -210,7 +210,7 @@ def class_distrib_approx(dataset, num_samples, dataset_name):
     # Sample a subset of data
     sample_indices = random.sample(range(len(dataset)), num_samples)
     for i in tqdm(sample_indices):
-        _, _, label, _ = dataset[i]
+        _, _, label, _, _ = dataset[i]
         label = label.item()
         if label in class_distribution:
             class_distribution[label] += 1
